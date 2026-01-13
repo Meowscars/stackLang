@@ -1,0 +1,17 @@
+keyword: sum
+    pop the last 2 numbers and push the result of their addition
+
+keyword: mul
+    pop the last 2 numbers and push the result of their multiply
+
+keyword: sub
+    pop the last 2 numbers and push the result of their subtraction
+
+keyword: div
+    pop the last 2 numbers and push the result of their division
+
+keyword: display
+    print the top element of the stack on the terminal
+
+
+writing any integer in an newline adds it to the stack
