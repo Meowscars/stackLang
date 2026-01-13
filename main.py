@@ -11,4 +11,4 @@ runner = interpreter.Interpreter()
 
 tokenizedContent = tokenizer.lex(content)
 print(tokenizedContent)
-runner.interpret(tokenizedContent)
+#runner.interpret(tokenizedContent)
