@@ -1,5 +1,8 @@
-"Hello, world!"
-30
-32
-sum
+2
+1
+lesser
 display
+if {
+"heaven"
+display
+}

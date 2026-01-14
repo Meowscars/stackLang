@@ -35,6 +35,13 @@ class Lexer:
                 if not stringState:
                     tokenList.append("\""+currentToken+"\"")
                     currentToken = ""
+            
+            elif char == "{" or char == "}":
+                if currentToken:
+                    tokenList.append(currentToken)
+                    currentToken = ""
+                
+                tokenList.append(char)
 
             else:
                 currentToken += char
@@ -56,6 +63,12 @@ class Lexer:
             
             elif token.isalpha():
                 refinedList.append({"identifier": token})
+            
+            elif token in ["{", "}"]:
+                if token == "{":
+                    refinedList.append({"opencurly": token})
+                else:
+                    refinedList.append({"closecurly": token})
             
             else:
                 print("illegal value encountered!")
