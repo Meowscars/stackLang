@@ -20,34 +20,38 @@ class Interpreter:
     
     def interpret(self, content: list):
         programStack = Stack()
-        nonKey = bool()
 
         for token in content:
-            match token:
-                case "sum":
-                    a = programStack.pop()
-                    b = programStack.pop()
-                    programStack.push(a+b)
-                
-                case "mul":
-                    a = programStack.pop()
-                    b = programStack.pop()
-                    programStack.push(a*b)
-                
-                case "sub":
-                    a = programStack.pop()
-                    b = programStack.pop()
-                    programStack.push(b-a)
-                
-                case "div":
-                    a = programStack.pop()
-                    b = programStack.pop()
-                    programStack.push(b/a)
-                
-                case "display":
-                    a = programStack.peek()
-                    print(a)
+            if "identifier" in token:
+                match token["identifier"]:
+                    case "sum":
+                        a = programStack.pop()
+                        b = programStack.pop()
+                        programStack.push(a+b)
+                    
+                    case "mul":
+                        a = programStack.pop()
+                        b = programStack.pop()
+                        programStack.push(a*b)
+                    
+                    case "sub":
+                        a = programStack.pop()
+                        b = programStack.pop()
+                        programStack.push(b-a)
+                    
+                    case "div":
+                        a = programStack.pop()
+                        b = programStack.pop()
+                        programStack.push(b/a)
+                    
+                    case "display":
+                        a = programStack.peek()
+                        print(a)
             
-            if token.isdigit():
-                num = int(token) # current assumption to be a int only. no other types implemented
+            if "int" in token:
+                num = int(token["int"]) # current assumption to be a int only. no other types implemented
                 programStack.push(num)
+            
+            elif "str" in token:
+                value = token["str"]
+                programStack.push(value)

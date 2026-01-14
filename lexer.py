@@ -54,7 +54,7 @@ class Lexer:
             elif re.match(r"\".*\"", token):
                 refinedList.append({"str": token})
             
-            elif token.isalpha:
+            elif token.isalpha():
                 refinedList.append({"identifier": token})
             
             else:
