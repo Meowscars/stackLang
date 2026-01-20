@@ -20,7 +20,7 @@ class Lexer:
             elif stringState and char != "\"": 
                 currentToken += char
 
-            elif (char == " " or char == "\n"): #split on empty space or newline. also append the last token formed
+            elif (char == " " or char == "\n" or char == "\t"): #split on empty space or newline. also append the last token formed
                 if currentToken:
                     tokenList.append(currentToken)
                     currentToken = ""
@@ -51,31 +51,51 @@ class Lexer:
 
         return tokenList
     
+
     def postprocessing(self, splitContent: list):
         refinedList = []
+        codeblocks = []
 
+        currentToken = {}
+        self.codeBlock = []
         for token in splitContent:
             if token.isdigit():
-                refinedList.append({"int": token})
-            
+                currentToken = {"int": token}
+                
             elif re.match(r"\".*\"", token):
-                refinedList.append({"str": token})
-            
+                currentToken = {"str": token}
+                
             elif token.isalpha():
-                refinedList.append({"identifier": token})
-            
+                currentToken = {"identifier": token}
+                
             elif token in ["{", "}"]:
                 if token == "{":
-                    refinedList.append({"opencurly": token})
+                    codeblocks.append([])
                 else:
-                    refinedList.append({"closecurly": token})
-            
+                    if len(codeblocks) != 1:
+                        block = {"codeblock": codeblocks.pop()}
+                        codeblocks[-1].append(block)
+                    else:
+                        block = {"codeblock": codeblocks.pop()}
+                        refinedList.append(block)
+                
             else:
                 print("illegal value encountered!")
-                refinedList.append({"illegal value": "null"})
+                currentToken = {"illegal value": "null"}
+
+
+            if currentToken:
+                if codeblocks:
+                    codeblocks[-1].append(currentToken)
+                    currentToken = {}
+                else:
+                    refinedList.append(currentToken)
+                    currentToken = {}
+        
         return refinedList
 
     def lex(self, content: str):
         splitContent = self.split(content)
         print(splitContent)
-        return self.postprocessing(splitContent)
+        pp = self.postprocessing(splitContent)
+        return pp

@@ -16,25 +16,65 @@ class Stack:
 
 class Interpreter:
     def __init__(self):
-        self.keywords = ["sum", "sub", "div", "mul"]
+        self.keywords = ["sum", "sub", "div", "mul", "if", "and", "or", "not", "greater", "lesser", "equal", "throw", "display", "var"]
     
     def interpret(self, content: list):
         self.programStack = Stack()
-        self.ifIsTrue = True
+        self.skipCodeblock = False
+        self.nestLevel: int = True
+        self.nonKeywordIdentifier = False
+        self.variables = {}
+        self.variableInitialization = False
+        self.loopState = False
+        self.functions = {}
+        self.funcName = ""
+        self.functionInitialization = False
 
-        for token in content:        
-            if self.ifIsTrue:
-                if "identifier" in token:
+        for token in content:
+
+            if self.skipCodeblock:
+                if "codeblock" in token:
+                    self.skipCodeblock = False
+            
+            elif self.loopState:
+                while True:
+                    self.codeblockExecuter(token)
+                    
+                    if not self.loopState:
+                        break
+            
+            elif "codeblock" in token:
+                self.codeblockExecuter(token)
+            
+            elif "identifier" in token:
+                self.keywordDefinition(token)
+            
+            else:
+                self.nonKeywordDefinitions(token)
+
+    def codeblockExecuter(self, codeblock):
+        if self.functionInitialization:
+            self.functions[self.funcName] = codeblock
+            self.functionInitialization = False
+
+        else:
+            for token in codeblock["codeblock"]:
+                if "codeblock" in token:
+                    if self.skipCodeblock:
+                        self.skipCodeblock = False
+                    else:
+                        self.codeblockExecuter(token)
+            
+                elif "identifier" in token:
                     self.keywordDefinition(token)
+            
                 else:
                     self.nonKeywordDefinitions(token)
-            else:
-                if "closecurly" in token:
-                    self.ifIsTrue = True
+                #print(token, self.programStack._stack, sep="\n")
 
     def nonKeywordDefinitions(self, token):
             if "int" in token:
-                num = int(token["int"]) # current assumption to be a int only. no other types implemented
+                num = int(token["int"])
                 self.programStack.push(num)
                 
             elif "str" in token:
@@ -92,10 +132,62 @@ class Interpreter:
                     self.programStack.push(0)
                     
             case "if":
-                if self.programStack.pop() == 1:
-                    self.ifIsTrue = True
-                else:
-                    self.ifIsTrue = False
+                if self.programStack.peek() == 1:
+                    self.skipCodeblock = False
+                elif self.programStack.peek() == 0:
+                    self.skipCodeblock = True
             
             case "throw":
                 self.programStack.pop()
+            
+            case "not":
+                a = self.programStack.pop()
+                if a == 1:
+                    self.programStack.push(0)
+                elif a == 0:
+                    self.programStack.push(1)
+            
+            case "and":
+                a = self.programStack.pop()
+                b = self.programStack.pop()
+                result = a and b
+                self.programStack.push(result)
+            
+            case "or":
+                a = self.programStack.pop()
+                b = self.programStack.pop()
+                result = a or b
+                self.programStack.push(result)
+            
+            case "var":
+                self.variableInitialization = True
+            
+            case "loop":
+                self.loopState = True
+            
+            case "quit":
+                self.loopState = False
+            
+            case "func":
+                self.functionInitialization = True
+
+            case _:
+                self.nonKeywordIdentifier = True
+        
+        if self.nonKeywordIdentifier:
+            if self.variableInitialization:
+                self.variables[token["identifier"]] = self.programStack.pop()
+                self.variableInitialization = False
+
+            elif self.functionInitialization:
+                self.functions[token["identifier"]] = []
+                self.funcName = token["identifier"]
+
+            elif token["identifier"] in self.variables:
+                value = self.variables[token["identifier"]]
+                self.programStack.push(value)
+
+            elif token["identifier"] in self.functions:
+                self.codeblockExecuter(self.functions[token["identifier"]])
+            
+            self.nonKeywordIdentifier = False

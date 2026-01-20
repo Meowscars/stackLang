@@ -1,8 +1,25 @@
+func
+fyodor
+{
+	"fyodor the great"
+	display
+	throw
+}
+
 2
-1
-lesser
+2
+sum
+4
+equal
+if
+{
+	fyodor
+}
 display
+not 
 if {
-"heaven"
-display
+	display
+	"fyodor ain't great"
+	display
+	throw
 }

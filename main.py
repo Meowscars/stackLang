@@ -10,5 +10,5 @@ tokenizer = lexer.Lexer()
 runner = interpreter.Interpreter()
 
 tokenizedContent = tokenizer.lex(content)
-print(tokenizedContent)
+#print(tokenizedContent)
 runner.interpret(tokenizedContent)
