@@ -1,8 +1,4 @@
 import errors
-from enum import Enum
-
-class _:
-    ...
 
 
 class Stack:
