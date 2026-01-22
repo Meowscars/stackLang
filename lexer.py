@@ -1,4 +1,5 @@
 import re
+print
 
 class Lexer:
     def __init__(self):
@@ -96,6 +97,5 @@ class Lexer:
 
     def lex(self, content: str):
         splitContent = self.split(content)
-        print(splitContent)
         pp = self.postprocessing(splitContent)
         return pp

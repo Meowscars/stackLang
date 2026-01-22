@@ -1,14 +1,24 @@
 import lexer
 import interpreter
+from sys import argv, exit
 
-file = "script.sl"
+def readFile(file):
+    with open(file) as f:
+        content = f.read()
+    return content
 
-with open(file) as f:
-    content = f.read()
+def startCycle(contents):
+    lex  = lexer.Lexer()
+    interpret = interpreter.Interpreter()
 
-tokenizer = lexer.Lexer()
-runner = interpreter.Interpreter()
+    result = lex.lex(contents)
 
-tokenizedContent = tokenizer.lex(content)
-#print(tokenizedContent)
-runner.interpret(tokenizedContent)
+    interpret.interpret(result)
+
+if __name__ == "__main__":
+    if len(argv) == 2:
+        filePath = argv[1]
+    else:
+        exit("No file name!")
+    
+    startCycle(readFile(filePath))

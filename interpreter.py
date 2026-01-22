@@ -1,4 +1,9 @@
 import errors
+from enum import Enum
+
+class _:
+    ...
+
 
 class Stack:
     def __init__(self):
@@ -26,8 +31,6 @@ class Interpreter:
     def interpret(self, content: list):
         self.programStack = Stack()
         self.skipCodeblock = False
-        self.nestLevel: int = True
-        self.nonKeywordIdentifier = False
         self.variables = {}
         self.variableInitialization = False
         self.loopState = False
@@ -36,12 +39,7 @@ class Interpreter:
         self.functionInitialization = False
 
         for token in content:
-
-            if self.skipCodeblock:
-                if "codeblock" in token:
-                    self.skipCodeblock = False
-            
-            elif self.loopState:
+            if self.loopState:
                 while True:
                     self.codeblockExecuter(token)
                     
@@ -58,24 +56,26 @@ class Interpreter:
                 self.nonKeywordDefinitions(token)
 
     def codeblockExecuter(self, codeblock):
-        if self.functionInitialization:
-            self.functions[self.funcName] = codeblock
-            self.functionInitialization = False
+        if not self.skipCodeblock:
+            if self.functionInitialization:
+                self.functions[self.funcName] = codeblock
+                self.funcName = ""
+                self.functionInitialization = False
+
+            else:
+                for token in codeblock["codeblock"]:
+                    if "codeblock" in token:
+                        self.codeblockExecuter(token)
+                
+                    elif "identifier" in token:
+                        self.keywordDefinition(token)
+                
+                    else:
+                        self.nonKeywordDefinitions(token)
+                    #print(token, self.programStack._stack, sep="\n")
 
         else:
-            for token in codeblock["codeblock"]:
-                if "codeblock" in token:
-                    if self.skipCodeblock:
-                        self.skipCodeblock = False
-                    else:
-                        self.codeblockExecuter(token)
-            
-                elif "identifier" in token:
-                    self.keywordDefinition(token)
-            
-                else:
-                    self.nonKeywordDefinitions(token)
-                #print(token, self.programStack._stack, sep="\n")
+            self.skipCodeblock = False
 
     def nonKeywordDefinitions(self, token):
             if "int" in token:
@@ -260,25 +260,20 @@ class Interpreter:
 
 
             case _:
-                self.nonKeywordIdentifier = True
+                if self.variableInitialization:
+                    self.variables[token["identifier"]] = self.programStack.pop()
+                    self.variableInitialization = False
 
+                elif self.functionInitialization:
+                    self.functions[token["identifier"]] = []
+                    self.funcName = token["identifier"]
 
-        if self.nonKeywordIdentifier:
-            self.nonKeywordIdentifier = False
-            if self.variableInitialization:
-                self.variables[token["identifier"]] = self.programStack.pop()
-                self.variableInitialization = False
+                elif token["identifier"] in self.variables:
+                    value = self.variables[token["identifier"]]
+                    self.programStack.push(value)
 
-            elif self.functionInitialization:
-                self.functions[token["identifier"]] = []
-                self.funcName = token["identifier"]
-
-            elif token["identifier"] in self.variables:
-                value = self.variables[token["identifier"]]
-                self.programStack.push(value)
-
-            elif token["identifier"] in self.functions:
-                self.codeblockExecuter(self.functions[token["identifier"]])
-            
-            else:
-                self.error.unexpectedIdentifier(token["identifier"])
+                elif token["identifier"] in self.functions:
+                    self.codeblockExecuter(self.functions[token["identifier"]])
+                    
+                else:
+                    self.error.unexpectedIdentifier(token["identifier"])
